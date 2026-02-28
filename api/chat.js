@@ -1,6 +1,17 @@
 export default async function handler(req, res) {
+  // ✅ Enable CORS
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
-    if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Use POST" });
+    }
 
     const { message = "", filesText = "", system = "" } = req.body || {};
 
@@ -34,13 +45,6 @@ export default async function handler(req, res) {
     });
 
     const data = await r.json();
-
-    if (!r.ok) {
-      return res.status(r.status).json({
-        error: data?.error?.message || "OpenAI error",
-        raw: data,
-      });
-    }
 
     const reply =
       data?.output?.[0]?.content?.find((c) => c.type === "output_text")?.text ||
